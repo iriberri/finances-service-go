@@ -1,13 +1,13 @@
 package route
 
 import (
-    "github.com/gin-gonic/gin"
     "github.com/adeynack/finances-service-go/src/finances-service/controller"
+    "github.com/gin-gonic/gin"
     "net/http"
 )
 
 func Register(
-    tokensController *controller.Tokens,
+    tokensController *controller.TokensController,
 ) *gin.Engine {
 
     r := gin.Default()
