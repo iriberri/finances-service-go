@@ -2,6 +2,8 @@ package service
 
 import (
     "encoding/base64"
+
+    "github.com/adeynack/finances-service-go/src/finances-service/util"
 )
 
 type TokenService interface {
@@ -17,20 +19,18 @@ type TokenService interface {
 }
 
 type tokenService struct {
-    createChan     chan *createTokenRequest
-    validateChan   chan *validateTokenRequest
-    invalidateChan chan *invalidateTokenRequest
+    syncChan   chan func()
+    tokenCache map[string]string
 }
 
 var _ TokenService = &tokenService{}
 
 func NewTokenService() TokenService {
     s := &tokenService{
-        createChan:     make(chan *createTokenRequest),
-        validateChan:   make(chan *validateTokenRequest),
-        invalidateChan: make(chan *invalidateTokenRequest),
+        syncChan:   make(chan func()),
+        tokenCache: map[string]string{},
     }
-    go tokenServiceActor(s)
+    util.StartSyncDispatcher(s.syncChan)
     return s
 }
 
@@ -42,102 +42,49 @@ var usersWithPassword = map[string]string{
 }
 
 func (s tokenService) CreateToken(username, password string) string {
-    req := &createTokenRequest{
-        Username:     username,
-        Password:     password,
-        ResponseChan: make(chan string),
+    responseChan := make(chan string)
+    defer close(responseChan)
+    s.syncChan <- func() {
+        // Check username and password
+        expectedPassword, found := usersWithPassword[username]
+        if !found || password != expectedPassword {
+            responseChan <- ""
+            return
+        }
+        // Create token
+        tokenPlain := username + ":" + password
+        token := base64.StdEncoding.EncodeToString([]byte(tokenPlain))
+        s.tokenCache[token] = username
+        responseChan <- token
     }
-    s.createChan <- req
-    token := <-req.ResponseChan
-    return token
+    return <-responseChan
 }
 
 func (s tokenService) ValidateToken(token string) bool {
-    req := &validateTokenRequest{
-        Token:        token,
-        ResponseChan: make(chan bool),
+    responseChan := make(chan bool)
+    defer close(responseChan)
+    s.syncChan <- func() {
+        _, found := s.tokenCache[token]
+        if !found {
+            responseChan <- false
+            return
+        }
+        responseChan <- true
     }
-    s.validateChan <- req
-    validated := <-req.ResponseChan
-    return validated
+    return <-responseChan
 }
 
 func (s tokenService) InvalidateToken(token string) bool {
-    req := &invalidateTokenRequest{
-        Token:        token,
-        ResponseChan: make(chan bool),
-    }
-    s.invalidateChan <- req
-    tokenWasValid := <-req.ResponseChan
-    return tokenWasValid
-}
-
-//
-// Internal Actor and its Messages
-//
-
-type tokenServiceInternal struct {
-    tokenCache map[string]string
-}
-
-func tokenServiceActor(s *tokenService) {
-    state := &tokenServiceInternal{
-        tokenCache: map[string]string{},
-    }
-    for {
-        select {
-        case req := <-s.createChan:
-            req.ResponseChan <- createToken(state, req)
-        case req := <-s.validateChan:
-            req.ResponseChan <- validateToken(state, req)
-        case req := <-s.invalidateChan:
-            req.ResponseChan <- invalidateToken(state, req)
+    responseChan := make(chan bool)
+    defer close(responseChan)
+    s.syncChan <- func() {
+        _, found := s.tokenCache[token]
+        if !found {
+            responseChan <- false
+            return
         }
+        delete(s.tokenCache, token)
+        responseChan <- true
     }
-}
-
-func createToken(s *tokenServiceInternal, req *createTokenRequest) string {
-    // Check username and password
-    expectedPassword, found := usersWithPassword[req.Username]
-    if !found || req.Password != expectedPassword {
-        return ""
-    }
-    // Create token
-    tokenPlain := req.Username + ":" + req.Password
-    token := base64.StdEncoding.EncodeToString([]byte(tokenPlain))
-    s.tokenCache[token] = req.Username
-    return token
-}
-
-func validateToken(s *tokenServiceInternal, req *validateTokenRequest) bool {
-    _, found := s.tokenCache[req.Token]
-    if !found {
-        return false
-    }
-    return true
-}
-
-func invalidateToken(s *tokenServiceInternal, req *invalidateTokenRequest) bool {
-    _, found := s.tokenCache[req.Token]
-    if !found {
-        return false
-    }
-    delete(s.tokenCache, req.Token)
-    return true
-}
-
-type createTokenRequest struct {
-    Username     string
-    Password     string
-    ResponseChan chan string
-}
-
-type validateTokenRequest struct {
-    Token        string
-    ResponseChan chan bool
-}
-
-type invalidateTokenRequest struct {
-    Token        string
-    ResponseChan chan bool
+    return <-responseChan
 }
