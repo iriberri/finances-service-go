@@ -199,7 +199,10 @@ func test(req *http.Request) (*httptest.ResponseRecorder, *tokensControllerTestE
 
 func testWith(req *http.Request, env *tokensControllerTestEnv) (*httptest.ResponseRecorder, *tokensControllerTestEnv) {
     if env == nil {
-        tokensService := service.NewTokenService()
+        userService := &mockUserServiceForTokenControllerTest{
+            usersWithPassword: mockListOfUsersWithPasswords,
+        }
+        tokensService := service.NewTokenService(userService)
         tokensController := controller.NewTokensController(tokensService)
         testRoute := route.Register(tokensController)
         env = &tokensControllerTestEnv{
@@ -234,4 +237,21 @@ func createToken(t *testing.T) (string, *tokensControllerTestEnv) {
         Authenticated: true,
     }, tokenInfo)
     return token, tokensController
+}
+
+type mockUserServiceForTokenControllerTest struct {
+    usersWithPassword map[string]string
+}
+
+func (s mockUserServiceForTokenControllerTest) AuthenticateUser(username, password string) (bool) {
+    expectedPassword, found := s.usersWithPassword[username]
+    if !found || password != expectedPassword {
+        return false
+    }
+    return true
+}
+
+var mockListOfUsersWithPasswords = map[string]string{
+    "max.mustermann": "maxisthebest",
+    "laura.gärtner":  "mysafepassword",
 }

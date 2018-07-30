@@ -2,8 +2,7 @@ package service
 
 import (
     "encoding/base64"
-
-    "github.com/adeynack/finances-service-go/src/finances-service/util"
+    "sync"
 )
 
 type TokenService interface {
@@ -19,72 +18,54 @@ type TokenService interface {
 }
 
 type tokenService struct {
-    syncChan   chan func()
-    tokenCache map[string]string
+    userService UserService
+    lock        *sync.RWMutex
+    tokenCache  map[string]string
 }
 
 var _ TokenService = &tokenService{}
 
-func NewTokenService() TokenService {
+func NewTokenService(userService UserService) TokenService {
     s := &tokenService{
-        syncChan:   make(chan func()),
-        tokenCache: map[string]string{},
+        userService: userService,
+        lock:        &sync.RWMutex{},
+        tokenCache:  map[string]string{},
     }
-    util.StartSyncDispatcher(s.syncChan)
     return s
 }
 
-// This is of course a temporary situation, until this evolves to a
-// centralised cache solution (database, Redis, ...).
-var usersWithPassword = map[string]string{
-    "max.mustermann": "maxisthebest",
-    "laura.gärtner":  "mysafepassword",
-}
-
 func (s tokenService) CreateToken(username, password string) string {
-    responseChan := make(chan string)
-    defer close(responseChan)
-    s.syncChan <- func() {
-        // Check username and password
-        expectedPassword, found := usersWithPassword[username]
-        if !found || password != expectedPassword {
-            responseChan <- ""
-            return
-        }
-        // Create token
-        tokenPlain := username + ":" + password
-        token := base64.StdEncoding.EncodeToString([]byte(tokenPlain))
-        s.tokenCache[token] = username
-        responseChan <- token
+    s.lock.Lock()
+    defer s.lock.Unlock()
+
+    // Check username and password
+    if !s.userService.AuthenticateUser(username, password) {
+        return ""
     }
-    return <-responseChan
+    // Create token
+    tokenPlain := username + ":" + password
+    token := base64.StdEncoding.EncodeToString([]byte(tokenPlain))
+
+    s.tokenCache[token] = username
+    return token
 }
 
 func (s tokenService) ValidateToken(token string) bool {
-    responseChan := make(chan bool)
-    defer close(responseChan)
-    s.syncChan <- func() {
-        _, found := s.tokenCache[token]
-        if !found {
-            responseChan <- false
-            return
-        }
-        responseChan <- true
-    }
-    return <-responseChan
+    s.lock.RLock()
+    defer s.lock.RUnlock()
+
+    _, found := s.tokenCache[token]
+    return found
 }
 
 func (s tokenService) InvalidateToken(token string) bool {
-    responseChan := make(chan bool)
-    defer close(responseChan)
-    s.syncChan <- func() {
-        _, found := s.tokenCache[token]
-        if !found {
-            responseChan <- false
-            return
-        }
-        delete(s.tokenCache, token)
-        responseChan <- true
+    s.lock.Lock()
+    defer s.lock.Unlock()
+
+    _, found := s.tokenCache[token]
+    if !found {
+        return false
     }
-    return <-responseChan
+    delete(s.tokenCache, token)
+    return true
 }

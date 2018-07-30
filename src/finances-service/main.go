@@ -7,8 +7,9 @@ import (
 )
 
 func main() {
-    // Dependency "Injection"
-    tokenService := service.NewTokenService()
+    // Dependencies resolution
+    userService := service.NewUserService()
+    tokenService := service.NewTokenService(userService)
     tokenController := controller.NewTokensController(tokenService)
 
     // Create route and start listening to requests.
