@@ -17,8 +17,8 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func Test_CreateToken_EmptyUser(t *testing.T) {
-    body := `{ "username": "",  "password": "whatever" }`
+func Test_CreateToken_EmptyEmail(t *testing.T) {
+    body := `{ "email": "",  "password": "whatever" }`
     req, err := http.NewRequest(http.MethodPost, "/tokens", strings.NewReader(body))
     assert.NoError(t, err)
     rec, _ := test(req)
@@ -27,13 +27,13 @@ func Test_CreateToken_EmptyUser(t *testing.T) {
     expectedBody := `{
         "status": 400,
         "title": "Unexpected body structure",
-        "detail": "Expecting a body similar to: {\"username\":\"foo\",\"password\":\"bar\"}"
+        "detail": "Expecting a body similar to: {\"email\":\"name@domain.com\",\"password\":\"something_very_secure\"}"
     }`
     assert.JSONEq(t, expectedBody, rec.Body.String())
 }
 
 func Test_CreateToken_EmptyPassword(t *testing.T) {
-    body := `{ "username": "max.mustermann", "password": "" }`
+    body := `{ "email": "max.mustermann@example.com", "password": "" }`
     req, err := http.NewRequest(http.MethodPost, "/tokens", strings.NewReader(body))
     assert.NoError(t, err)
     rec, _ := test(req)
@@ -42,13 +42,13 @@ func Test_CreateToken_EmptyPassword(t *testing.T) {
     expectedBody := `{
         "status": 400,
         "title": "Unexpected body structure",
-        "detail": "Expecting a body similar to: {\"username\":\"foo\",\"password\":\"bar\"}"
+        "detail": "Expecting a body similar to: {\"email\":\"name@domain.com\",\"password\":\"something_very_secure\"}"
     }    `
     assert.JSONEq(t, expectedBody, rec.Body.String())
 }
 
-func Test_CreateToken_UnknownUser(t *testing.T) {
-    body := `{ "username": "do not exist", "password": "whatever" }`
+func Test_CreateToken_UnknownEmail(t *testing.T) {
+    body := `{ "email": "do not exist", "password": "whatever" }`
     req, err := http.NewRequest(http.MethodPost, "/tokens", strings.NewReader(body))
     assert.NoError(t, err)
     rec, _ := test(req)
@@ -63,7 +63,7 @@ func Test_CreateToken_UnknownUser(t *testing.T) {
 }
 
 func Test_CreateToken_BadPassword(t *testing.T) {
-    body := `{ "username": "max.mustermann", "password": "whatever" }`
+    body := `{ "email": "max.mustermann@example.com", "password": "whatever" }`
     req, err := http.NewRequest(http.MethodPost, "/tokens", strings.NewReader(body))
     assert.NoError(t, err)
     rec, _ := test(req)
@@ -217,7 +217,7 @@ func testWith(req *http.Request, env *tokensControllerTestEnv) (*httptest.Respon
 }
 
 func createToken(t *testing.T) (string, *tokensControllerTestEnv) {
-    reqBody := `{ "username": "max.mustermann", "password": "maxisthebest" }`
+    reqBody := `{ "email": "max.mustermann@example.com", "password": "maxisthebest" }`
     req, err := http.NewRequest(http.MethodPost, "/tokens", strings.NewReader(reqBody))
     assert.NoError(t, err)
     rec, tokensController := test(req)
@@ -243,8 +243,8 @@ type mockUserServiceForTokenControllerTest struct {
     usersWithPassword map[string]string
 }
 
-func (s mockUserServiceForTokenControllerTest) AuthenticateUser(username, password string) (bool) {
-    expectedPassword, found := s.usersWithPassword[username]
+func (s mockUserServiceForTokenControllerTest) AuthenticateUser(email, password string) (bool) {
+    expectedPassword, found := s.usersWithPassword[email]
     if !found || password != expectedPassword {
         return false
     }
@@ -252,6 +252,6 @@ func (s mockUserServiceForTokenControllerTest) AuthenticateUser(username, passwo
 }
 
 var mockListOfUsersWithPasswords = map[string]string{
-    "max.mustermann": "maxisthebest",
-    "laura.gärtner":  "mysafepassword",
+    "max.mustermann@example.com": "maxisthebest",
+    "laura.gärtner@example.com":  "mysafepassword",
 }

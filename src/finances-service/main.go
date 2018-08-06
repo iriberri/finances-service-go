@@ -8,7 +8,8 @@ import (
 
 func main() {
     // Dependencies resolution
-    userService := service.NewUserService()
+    databaseService := service.NewDatabaseService()
+    userService := service.NewUserService(databaseService)
     tokenService := service.NewTokenService(userService)
     tokenController := controller.NewTokensController(tokenService)
 

@@ -8,7 +8,7 @@ import (
 type TokenService interface {
     // Controls username and password and create a token for the user.
     // Returns a token when user is authenticated or an empty string if failed.
-    CreateToken(username, password string) string
+    CreateToken(email, password string) string
 
     // Validates if a given token is valid.
     ValidateToken(token string) bool
@@ -34,19 +34,19 @@ func NewTokenService(userService UserService) TokenService {
     return s
 }
 
-func (s tokenService) CreateToken(username, password string) string {
+func (s tokenService) CreateToken(email, password string) string {
     s.lock.Lock()
     defer s.lock.Unlock()
 
     // Check username and password
-    if !s.userService.AuthenticateUser(username, password) {
+    if !s.userService.AuthenticateUser(email, password) {
         return ""
     }
     // Create token
-    tokenPlain := username + ":" + password
-    token := base64.StdEncoding.EncodeToString([]byte(tokenPlain))
+    // todo: Something more secure than the email itself encoded.
+    token := base64.StdEncoding.EncodeToString([]byte(email))
 
-    s.tokenCache[token] = username
+    s.tokenCache[token] = email
     return token
 }
 

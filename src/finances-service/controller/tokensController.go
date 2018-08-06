@@ -1,6 +1,7 @@
 package controller
 
 import (
+    "encoding/json"
     "fmt"
     "net/http"
 
@@ -24,16 +25,24 @@ func NewTokensController(tokenService service.TokenService) *TokensController {
 func (ctrl *TokensController) Create(c *gin.Context) {
     req := api.TokenCreateIn{}
     if err := c.BindJSON(&req);
-        err != nil || req.Username == "" || req.Password == "" {
+        err != nil || req.Email == "" || req.Password == "" {
+        example := api.TokenCreateIn{
+            Email:    "name@domain.com",
+            Password: "something_very_secure",
+        }
+        exampleJson, err := json.Marshal(example)
+        if err != nil {
+            panic(err)
+        }
         WriteProblem(c, &problem.Problem{
             Status: http.StatusBadRequest,
             Title:  "Unexpected body structure",
-            Detail: `Expecting a body similar to: {"username":"foo","password":"bar"}`,
+            Detail: fmt.Sprintf(`Expecting a body similar to: %s`, exampleJson),
         })
         return
     }
 
-    token := ctrl.tokenService.CreateToken(req.Username, req.Password)
+    token := ctrl.tokenService.CreateToken(req.Email, req.Password)
     if token == "" {
         WriteProblem(c, &problem.Problem{
             Status: http.StatusUnauthorized,

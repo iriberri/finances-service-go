@@ -36,6 +36,15 @@
   version = "v1.1.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid"
+  ]
+  revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
+
+[[projects]]
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
@@ -80,6 +89,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "53f69f7e3bc50d30478606b8811500e70225e9bdbf49c4511b91392ebe092198"
+  inputs-digest = "240ea84ccb017f6183b2ce869decd0f54fd328ba94e9ebe4cc7237e345175b76"
   solver-name = "gps-cdcl"
   solver-version = 1
