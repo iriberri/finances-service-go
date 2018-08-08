@@ -28,12 +28,48 @@ dep ensure
 go test ./...
 ```
 
+### Execute from sources
+
+Execute (with default configuration `dev`):
+```bash
+go run src/finances-service/main.go
+```
+
+Execute with a specific configuration file (example: `production`):
+```bash
+FINANCES_SERVICE_CONFIG=config/production.yaml go run src/finances-service/main.go
+```
+
 ### Build & Execute
 
 This outputs `./finances-service` (`.exe` on Windows) executable.
 
+To start it with a specific configuration, prepend the `FINANCES_SERVICE_CONFIG` environment
+variable assignment before calling the executable.
+
 ```bash
 go build ./src/finances-service
-./finances-service
+FINANCES_SERVICE_CONFIG=config/production.yaml ./finances-service
 # .\finances-service.exe on Windows
+```
+
+# Configuration
+
+## Configuration File
+
+By default, the service will try to load `config/dev.yaml`. By change this
+behaviour, this environment variable must be set.
+
+```bash
+FINANCES_SERVICE_CONFIG=config/integration.yaml
+```
+
+## Specific Configuration Key
+
+To set a specific configuration key, per instance `database.password`,
+set an environment variable with its path in UPPERCASE, separated by underscores `_` instead
+of dots `.` and prefixing it by `FINANCES_SERVICE`.
+
+```bash
+FINANCES_SERVICE_DATABASE_PASSWORD=thisISohSOsecure
 ```

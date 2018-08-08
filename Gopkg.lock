@@ -51,6 +51,12 @@
   version = "v0.0.3"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/olebedev/config"
+  packages = ["."]
+  revision = "ed90d2035b8114c30b9cb65e7d52e10a7148f8c6"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -89,6 +95,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "240ea84ccb017f6183b2ce869decd0f54fd328ba94e9ebe4cc7237e345175b76"
+  inputs-digest = "58b5968b92d73be2bcdf127cd5e845849b2636f4c3c30824fe3a3acc1e8e3cc0"
   solver-name = "gps-cdcl"
   solver-version = 1

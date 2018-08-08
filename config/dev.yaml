@@ -1,0 +1,13 @@
+gin:
+  # Available modes: debug | release | test
+  mode: debug
+
+database:
+  hostname: localhost
+  port: 5432
+  username: postgres
+  password: postgres
+  database: finances-dev
+  options:
+    sslmode: disable
+    search_path: finances

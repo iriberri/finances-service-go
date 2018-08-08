@@ -1,5 +1,5 @@
 # Binaries for programs and plugins
-finances-service
+/finances-service
 *.exe
 *.exe~
 *.dll
@@ -13,7 +13,7 @@ finances-service
 *.out
 
 # dep
-vendor/
+/vendor/
 
 # JetBrains / IntelliJ / GoLang
 .idea/
