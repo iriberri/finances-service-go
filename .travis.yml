@@ -1,0 +1,13 @@
+# Help on this:
+# https://docs.travis-ci.com/user/getting-started/
+
+language: go
+
+go:
+  - "1.10.x"
+
+before_install:
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+script:
+  - make ci-trigger
