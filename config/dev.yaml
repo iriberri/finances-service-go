@@ -3,26 +3,34 @@
 #
 profile: dev
 banner: |-
-  .
-  .  (
-  .  )\ )
-  .  (()/(   (    (   (
-  .  /(_))  )\   )\  )\
-  .  (_))_  ((_) ((_)((_)
-  .  |   \  | __|\ \ / /
-  .  | |) | | _|  \ V /
-  .  |___/  |___|  \_/
-  .
-  . FINANCES-SERVICE running in `development` mode
-  .
+  .                                                  .
+  .  ▀▀▀▀   ▀▀▀▀  ▀   ▀                              .
+  .  ▀   ▀  ▀     ▀   ▀                              .
+  .  ▀   ▀  ▀▀▀   ▀   ▀                              .
+  .  ▀   ▀  ▀      ▀ ▀                               .
+  .  ▀▀▀▀   ▀▀▀▀    ▀                                .
+  .                                                  .
+  . FINANCES-SERVICE running in `development` mode   .
+  .                                                  .
 
-# Controlling the GIN framework and server.
+# Configure how the application logs information
+log:
+
+  # Formatter: json | text
+  # DEFAULT: text
+  formatter: text
+
+# Controlling the GIN framework and server
 gin:
 
   # In which mode to execute the "GIN" server.
   # Available modes: debug | release | test
   # DEFAULT: debug
-  mode: debug
+  mode: release
+
+  # Log all requests
+  # DEFAULT: false
+  log_requests: true
 
 # Database connection and configuration
 database:

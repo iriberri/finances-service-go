@@ -4,7 +4,6 @@ import (
     "database/sql"
     "fmt"
     "io/ioutil"
-    "log"
     "path"
     "regexp"
     "strconv"
@@ -12,6 +11,8 @@ import (
 
     "github.com/GuiaBolso/darwin"
     "github.com/adeynack/finances-service-go/src/finances-service/util"
+
+    log "github.com/sirupsen/logrus"
 
     // Import the database drive within the service itself to avoid managing DB related
     // concerns in the main package.
@@ -47,7 +48,7 @@ func NewDatabaseService(conf *util.ConfigReader) DatabaseService {
     connStr := fmt.Sprintf(
         "postgresql://%s:%s@%s:%d/%s%s",
         username, password, hostname, port, database, optionsString)
-    log.Printf("Connecting to database using connection string: %s", connStr)
+    log.Infof("Connecting to database using connection string: %s", connStr)
     db, err := sql.Open("postgres", connStr)
     if err != nil {
         log.Fatal(err)
@@ -99,7 +100,7 @@ func evolveDatabase(db *sql.DB, evConf *util.ConfigReader, schema string) error 
 
     runAtStartup := evConf.MustBool("run_at_startup")
     if !runAtStartup {
-        log.Println("Database evolution are configured not to run.")
+        log.Infof("Database evolution are configured not to run.")
         return nil
     }
 
@@ -129,7 +130,7 @@ func recreateSchema(db *sql.DB, evConf *util.ConfigReader, schemaName string) er
     if !evConf.UBool("recreate_schema", false) {
         return nil
     }
-    log.Printf("Forcing re-creation of the database schema. HINT: THIS SHOULD NEVER HAPPEN IN PRODUCTION\n")
+    log.Infof("Forcing re-creation of the database schema. HINT: THIS SHOULD NEVER HAPPEN IN PRODUCTION")
     schemaExists, err := doesSchemaExist(db, schemaName)
     if err != nil {
         return err
@@ -151,18 +152,18 @@ func doesSchemaExist(db *sql.DB, schemaName string) (bool, error) {
 }
 
 func dropSchema(db *sql.DB, schemaName string) error {
-    log.Printf("recreate schema: schema %q exists: dropping\n", schemaName)
+    log.Infof("recreate schema: schema %q exists: dropping", schemaName)
     queryDropSchema := fmt.Sprintf("drop schema %s cascade", schemaName)
     _, err := db.Exec(queryDropSchema)
     if err != nil {
         return fmt.Errorf("recreate schema: droping schema %q: %s", schemaName, err)
     }
-    log.Printf("recreate schema: schema dropped\n")
+    log.Infof("recreate schema: schema dropped")
     return nil
 }
 
 func createSchema(db *sql.DB, schemaName string) error {
-    log.Printf("recreate schema: creating schema %q\n", schemaName)
+    log.Infof("recreate schema: creating schema %q", schemaName)
     queryCreateSchema := fmt.Sprintf("create schema %s", schemaName)
     _, err := db.Exec(queryCreateSchema)
     if err != nil {
@@ -177,7 +178,7 @@ func extractEvolutionFromFiles(evConf *util.ConfigReader) ([]darwin.Migration, e
     steps := make([]darwin.Migration, 0)
     folder := evConf.MustString("scripts_folders")
     includeDev := evConf.UBool("include_dev_scripts", false)
-    log.Printf("Scanning folder %q for database evolution scripts\n", folder)
+    log.Infof("Scanning folder %q for database evolution scripts", folder)
     files, err := ioutil.ReadDir(folder)
     if err != nil {
         return nil, fmt.Errorf("reading folder %q: %s", folder, err)
@@ -191,10 +192,10 @@ func extractEvolutionFromFiles(evConf *util.ConfigReader) ([]darwin.Migration, e
             return nil, fmt.Errorf("file %q does not match expected format. %s", file.Name(), errorSuffix)
         }
         if !includeDev && len(matches[3]) > 0 {
-            log.Printf("%q skipping DEV script file", file.Name())
+            log.Infof("%q skipping DEV script file", file.Name())
             continue
         }
-        log.Printf("%q reading file", file.Name())
+        log.Infof("%q reading file", file.Name())
         evolutionNumber, _ := strconv.Atoi(matches[1])
         if evolutionNumber < 1 {
             return nil, fmt.Errorf("file %q: number part should be a positive number. %s", file.Name(), errorSuffix)
@@ -222,7 +223,7 @@ func logMigrationInfo(infoChan chan darwin.MigrationInfo, doneChan chan bool) {
             break
         }
         if count == 0 {
-            log.Print("Migration is starting\n")
+            log.Infof("Migration is starting")
         }
         count++
         var errorPart string
@@ -231,17 +232,17 @@ func logMigrationInfo(infoChan chan darwin.MigrationInfo, doneChan chan bool) {
         } else {
             errorPart = fmt.Sprintf(": %s", info.Error)
         }
-        log.Printf(
-            "Migration %v %q / status: %s%s\n",
+        log.Infof(
+            "Migration %v %q / status: %s%s",
             info.Migration.Version,
             info.Migration.Description,
             info.Status,
             errorPart)
     }
     if count == 0 {
-        log.Print("No migration to be performed (database is up to date)\n")
+        log.Infof("No migration to be performed (database is up to date)")
     } else {
-        log.Printf("Migration is done (%d steps performed)\n", count)
+        log.Infof("Migration is done (%d steps performed)", count)
     }
     doneChan <- true
 }

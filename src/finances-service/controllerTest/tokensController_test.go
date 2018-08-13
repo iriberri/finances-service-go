@@ -204,7 +204,8 @@ func testWith(req *http.Request, env *tokensControllerTestEnv) (*httptest.Respon
         }
         tokensService := service.NewTokenService(userService)
         tokensController := controller.NewTokensController(tokensService)
-        testRoute := route.Register(tokensController)
+        testRoute := gin.New()
+        route.Register(testRoute, tokensController)
         env = &tokensControllerTestEnv{
             TokensService:    tokensService,
             TokensController: tokensController,

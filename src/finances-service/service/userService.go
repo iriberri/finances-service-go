@@ -2,7 +2,8 @@ package service
 
 import (
     "database/sql"
-    "log"
+
+    log "github.com/sirupsen/logrus"
 )
 
 type UserService interface {
@@ -38,7 +39,7 @@ func (s *userService) AuthenticateUser(email, password string) bool {
         return false
     }
     if err != nil {
-        log.Printf("Failed to query for user. Refusing authentication. %s", err)
+        log.Infof("Failed to query for user. Refusing authentication. %s", err)
         return false
     }
     // todo #14 : Check the password

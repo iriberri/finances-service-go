@@ -9,6 +9,9 @@ build:
 test:
 	go test ./src/finances-service/...
 
+run:
+	go run src/finances-service/main.go
+
 clean:
 	go clean -cache
 
