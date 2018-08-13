@@ -15,6 +15,7 @@ import (
 func main() {
     // Configuration
     conf := readConfiguration()
+    log.Println(conf.MustString("banner"))
 
     // Dependencies resolution
     databaseService := service.NewDatabaseService(conf)
