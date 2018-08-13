@@ -130,29 +130,41 @@ func recreateSchema(db *sql.DB, evConf *util.ConfigReader, schemaName string) er
         return nil
     }
     log.Printf("Forcing re-creation of the database schema. HINT: THIS SHOULD NEVER HAPPEN IN PRODUCTION\n")
+    schemaExists, err := doesSchemaExist(db, schemaName)
+    if err != nil {
+        return err
+    }
+    if schemaExists {
+        dropSchema(db, schemaName)
+    }
+    return createSchema(db, schemaName)
+}
 
-    // CHECK IF SCHEMA EXISTS
+func doesSchemaExist(db *sql.DB, schemaName string) (bool, error) {
     queryCheckIfSchemaExists := fmt.Sprintf("SELECT schema_name FROM information_schema.schemata WHERE schema_name = '%s'", schemaName)
     res, err := db.Query(queryCheckIfSchemaExists)
     defer res.Close()
     if err != nil {
-        return fmt.Errorf("recreate schema: checking if schema exists: %s", err)
+        return false, fmt.Errorf("recreate schema: checking if schema exists: %s", err)
     }
-    if res.Next() {
-        // DROPPING EXISTING SCHEMA
-        log.Printf("recreate schema: schema %q exists: dropping\n", schemaName)
-        queryDropSchema := fmt.Sprintf("drop schema %s cascade", schemaName)
-        _, err := db.Exec(queryDropSchema)
-        if err != nil {
-            return fmt.Errorf("recreate schema: droping schema %q: %s", schemaName, err)
-        }
-        log.Printf("recreate schema: schema dropped\n")
-    }
+    return res.Next(), nil
+}
 
-    // CREATE SCHEMA
+func dropSchema(db *sql.DB, schemaName string) error {
+    log.Printf("recreate schema: schema %q exists: dropping\n", schemaName)
+    queryDropSchema := fmt.Sprintf("drop schema %s cascade", schemaName)
+    _, err := db.Exec(queryDropSchema)
+    if err != nil {
+        return fmt.Errorf("recreate schema: droping schema %q: %s", schemaName, err)
+    }
+    log.Printf("recreate schema: schema dropped\n")
+    return nil
+}
+
+func createSchema(db *sql.DB, schemaName string) error {
     log.Printf("recreate schema: creating schema %q\n", schemaName)
     queryCreateSchema := fmt.Sprintf("create schema %s", schemaName)
-    _, err = db.Exec(queryCreateSchema)
+    _, err := db.Exec(queryCreateSchema)
     if err != nil {
         return fmt.Errorf("recreate schema: creating schema %q: %s", schemaName, err)
     }
