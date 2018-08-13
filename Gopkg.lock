@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/GuiaBolso/darwin"
+  packages = ["."]
+  revision = "86919dfcf80873d58ea2e527c15b1e02a5636ead"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -95,6 +101,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "58b5968b92d73be2bcdf127cd5e845849b2636f4c3c30824fe3a3acc1e8e3cc0"
+  inputs-digest = "2e5019a181f2105e1e5f0fa567db94a2893b47f7839a9781e0d9af85f05a10f1"
   solver-name = "gps-cdcl"
   solver-version = 1

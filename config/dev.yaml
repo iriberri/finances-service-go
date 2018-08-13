@@ -1,13 +1,45 @@
+#
+# DEVELOPMENT
+#
+profile: dev
+
+# Controlling the GIN framework and server.
 gin:
+
+  # In which mode to execute the "GIN" server.
   # Available modes: debug | release | test
+  # DEFAULT: debug
   mode: debug
 
+# Database connection and configuration
 database:
+
+  # Database connection (all mandatory)
   hostname: localhost
   port: 5432
   username: postgres
   password: postgres
   database: finances-dev
+  schema: finances
+
+  # Options to pass as query-URL at the end of the connection string.
   options:
     sslmode: disable
-    search_path: finances
+
+  evolution:
+
+    # Should the automatic evolution of the database be executed at startup?
+    # MANDATORY
+    run_at_startup: true
+
+    # Folder in which to find the database evolution scripts.
+    # MANDATORY (if `run_at_startup` is true)
+    scripts_folders: database/evolution
+
+    # Set to `true` to force the complete re-creation of the schema at startup (for DEV only)
+    # DEFAULT: false
+    #recreate_schema: true
+
+    # Include -DEV files (only scripts needed for development purposes, ex: insert dev data)
+    # DEFAULT: false
+    include_dev_scripts: true

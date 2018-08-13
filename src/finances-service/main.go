@@ -7,6 +7,7 @@ import (
     "github.com/adeynack/finances-service-go/src/finances-service/controller"
     "github.com/adeynack/finances-service-go/src/finances-service/route"
     "github.com/adeynack/finances-service-go/src/finances-service/service"
+    "github.com/adeynack/finances-service-go/src/finances-service/util"
     "github.com/gin-gonic/gin"
     "github.com/olebedev/config"
 )
@@ -22,12 +23,12 @@ func main() {
     tokenController := controller.NewTokensController(tokenService)
 
     // Create route and start listening to requests.
-    gin.SetMode(conf.UString("gin.mode"))
+    gin.SetMode(conf.UString("gin.mode", "debug"))
     routes := route.Register(tokenController)
     routes.Run(":3000")
 }
 
-func readConfiguration() *config.Config {
+func readConfiguration() *util.ConfigReader {
     envVarConfigFile := "FINANCES_SERVICE_CONFIG"
     envConfigFile, found := os.LookupEnv(envVarConfigFile)
     if found && len(envConfigFile) > 0 {
@@ -42,5 +43,5 @@ func readConfiguration() *config.Config {
         panic(err)
     }
     conf.EnvPrefix("FINANCES_SERVICE").Flag()
-    return conf
+    return &util.ConfigReader{Config: conf}
 }

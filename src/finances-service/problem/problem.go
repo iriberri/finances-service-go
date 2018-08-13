@@ -28,7 +28,6 @@ func (p Problem) String() string {
 func (p Problem) Error() string {
     if p.Cause == nil {
         return p.String()
-    } else {
-        return fmt.Sprintf("%s caused by: %s", p.String(), p.Error())
     }
+    return fmt.Sprintf("%s caused by: %s", p.String(), p.Error())
 }
