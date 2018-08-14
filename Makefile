@@ -17,18 +17,11 @@ clean:
 	# Cleaning the go environment for this project,
 	# cache and test cache only.
 	#
-	go clean -cache -testcache ./...
-
-clean-all:
-	#
-	# Cleaning the go environment for this project,
-	# as radically as possible.
-	#
-	go clean -cache -testcache -x -r -i ./...
+	go clean -cache -testcache -x -i ./...
 
 check: deps clean test
 
-ci-trigger: clean-all
+ci-trigger: clean
 	#
 	# Ensuring dependencies are installed
 	#
