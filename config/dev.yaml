@@ -2,13 +2,20 @@
 # DEVELOPMENT
 #
 profile: dev
+
+# Used font: http://patorjk.com/software/taag/#p=display&f=Bloody&t=Dev
 banner: |-
   .                                                  .
-  .  ▀▀▀▀   ▀▀▀▀  ▀   ▀                              .
-  .  ▀   ▀  ▀     ▀   ▀                              .
-  .  ▀   ▀  ▀▀▀   ▀   ▀                              .
-  .  ▀   ▀  ▀      ▀ ▀                               .
-  .  ▀▀▀▀   ▀▀▀▀    ▀                                .
+  .   ▓█████▄ ▓█████ ██▒   █▓                        .
+  .   ▒██▀ ██▌▓█   ▀▓██░   █▒                        .
+  .   ░██   █▌▒███   ▓██  █▒░                        .
+  .   ░▓█▄   ▌▒▓█  ▄  ▒██ █░░                        .
+  .   ░▒████▓ ░▒████▒  ▒▀█░                          .
+  .   ▒▒▓  ▒ ░░ ▒░ ░  ░ ▐░                           .
+  .   ░ ▒  ▒  ░ ░  ░  ░ ░░                           .
+  .   ░ ░  ░    ░       ░░                           .
+  .   ░       ░  ░     ░                             .
+  .   ░                 ░                            .
   .                                                  .
   . FINANCES-SERVICE running in `development` mode   .
   .                                                  .
